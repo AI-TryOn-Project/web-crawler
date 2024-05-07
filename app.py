@@ -17,6 +17,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import logging
 from logging.handlers import RotatingFileHandler
+import urllib.parse
 
 app = Flask(__name__)
 if not app.debug:
@@ -104,6 +105,9 @@ def scrape_deals(url, collection, max_items=100):
                     print(f"Failed to follow redirects for {shop_now_link}: {str(e)}")
                     final_url = shop_now_link
 
+                parsed_url = urllib.parse.urlparse(final_url)
+                cleaned_url = urllib.parse.urlunparse(
+                    (parsed_url.scheme, parsed_url.netloc, parsed_url.path, '', '', ''))
                 p_right = mlist.find('div', class_='p-right')
                 title_link = p_right.find('a', class_='zoom-title')['href']
 
@@ -137,7 +141,7 @@ def scrape_deals(url, collection, max_items=100):
 
                         details.append(text)
                 deal_info = {
-                    'shop_now_link': final_url,
+                    'shop_now_link': cleaned_url,
                     'title_link': title_link,
                     'title': title,
                     'subtitle': subtitle,
@@ -189,6 +193,17 @@ def get_deals_by_domain_men():
     return jsonify(deals)
 
 
+@app.route('/clean-urls', methods=['POST'])
+def clean_urls():
+    collections = [women_deals_collection, men_deals_collection]
+    for collection in collections:
+        deals = list(collection.find({}))
+        for deal in deals:
+            original_url = deal.get('shop_now_link', '')
+            parsed_url = urllib.parse.urlparse(original_url)
+            cleaned_url = urllib.parse.urlunparse((parsed_url.scheme, parsed_url.netloc, parsed_url.path, '', '', ''))
+            collection.update_one({'_id': deal['_id']}, {'$set': {'shop_now_link': cleaned_url}})
+    return jsonify({'message': 'URLs cleaned successfully'}), 200
 
 @app.route('/manual-scrape', methods=['GET'])
 def manual_scrape():
