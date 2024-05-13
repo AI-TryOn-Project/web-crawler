@@ -72,3 +72,7 @@ requests.exceptions.ProxyError: HTTPSConnectionPool(host='www.dealmoon.com', por
 2024-05-02 20:47:52,177 INFO: Application startup [in C:\Users\Carrylee\Desktop\fAIshion intern\flask\flask\app.py:30]
 2024-05-02 21:11:52,634 INFO: Application startup [in C:\Users\Carrylee\Desktop\fAIshion intern\flask\flask\app.py:30]
 2024-05-02 21:11:53,143 INFO: Application startup [in C:\Users\Carrylee\Desktop\fAIshion intern\flask\flask\app.py:30]
+2024-05-06 20:09:15,797 INFO: Application startup [in C:\Users\Carrylee\Desktop\fAIshion intern\flask\flask\app.py:31]
+2024-05-06 20:09:16,292 INFO: Application startup [in C:\Users\Carrylee\Desktop\fAIshion intern\flask\flask\app.py:31]
+2024-05-11 18:08:26,275 INFO: Application startup [in C:\Users\Carrylee\Desktop\fAIshion intern\flask\flask\app.py:50]
+2024-05-11 18:08:27,040 INFO: Application startup [in C:\Users\Carrylee\Desktop\fAIshion intern\flask\flask\app.py:50]

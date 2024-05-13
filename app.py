@@ -18,6 +18,25 @@ import time
 import logging
 from logging.handlers import RotatingFileHandler
 import urllib.parse
+from groq import Groq
+
+
+def rewrite_sentence(sentence):
+    api_key = "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"
+    client = Groq(api_key=api_key)
+    prompt = f"Rewrite the following sentence while maintaining the original length and immediately return the new sentence without any additional text or comments: '{sentence}'"
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        model="llama3-8b-8192",
+    )
+    rewritten_sentence = chat_completion.choices[0].message.content
+    rewritten_sentence = rewritten_sentence.replace('"', '').replace("'", "")
+    return rewritten_sentence
 
 app = Flask(__name__)
 if not app.debug:
@@ -36,13 +55,18 @@ women_deals_collection = db['women_deals']
 men_deals_collection = db['men_deals']
 deals_collection = db['deals']
 
+
 def scheduled_scrape():
     men_url = 'https://www.dealmoon.com/en/clothing-jewelry-bags/mens-clothing'
     women_url = 'https://www.dealmoon.com/en/clothing-jewelry-bags/womens-clothing'
+
     print("fetching men")
     men_deals = scrape_deals(men_url, men_deals_collection, max_items=100)
     print("fetching women")
     women_deals = scrape_deals(women_url, women_deals_collection, max_items=100)
+    deals_collection.delete_many({})
+    deals_collection.insert_many(men_deals)
+    deals_collection.insert_many(women_deals)
     print("All deals scraped and saved successfully")
 
 #
@@ -62,6 +86,11 @@ def get_women_deals():
 @app.route('/get-men-deals', methods=['GET'])
 def get_men_deals():
     deals = list(men_deals_collection.find({}, {'_id': 0}))
+    return jsonify(deals)
+
+@app.route('/get-all-deals', methods=['GET'])
+def get_all_deals():
+    deals = list(deals_collection.find({}, {'_id': 0}))
     return jsonify(deals)
 
 
@@ -138,8 +167,9 @@ def scrape_deals(url, collection, max_items=100):
 
                         text = re.sub(r'(?i)(code)(next|\w*)\s*((?:\w+\s*)*)',
                                         lambda m: m.group(1) + ' ' + m.group(2) + ''.join(m.group(3).split()), text)
-
-                        details.append(text)
+                        rewrite = rewrite_sentence(text)
+                        details.append(rewrite)
+                        time.sleep(2)
                 deal_info = {
                     'shop_now_link': cleaned_url,
                     'title_link': title_link,
