@@ -19,6 +19,8 @@ import logging
 from logging.handlers import RotatingFileHandler
 import urllib.parse
 from groq import Groq
+from datetime import datetime
+import time
 
 
 def rewrite_sentence(sentence):
@@ -109,7 +111,6 @@ def scrape_deals(url, collection, max_items=100):
     driver = Chrome(options=chrome_options)
     driver.get(url)
     time.sleep(3)
-
     scraped_items = []
     try:
         last_height = driver.execute_script("return document.body.scrollHeight")
@@ -175,7 +176,8 @@ def scrape_deals(url, collection, max_items=100):
                     'title_link': title_link,
                     'title': title,
                     'subtitle': subtitle,
-                    'details': details
+                    'details': details,
+                    'scrape_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 }
                 print(deal_info)
                 scraped_items.append(deal_info)
