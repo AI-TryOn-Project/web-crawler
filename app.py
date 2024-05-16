@@ -224,6 +224,25 @@ def get_deals_by_domain_men():
 
     return jsonify(deals)
 
+@app.route('/deals-by-domain', methods=['POST'])
+def get_deals_by_domain():
+    data = request.get_json()
+    domain = data.get('domain')
+
+    if not domain:
+        return jsonify({'error': 'Domain parameter is missing'}), 400
+
+    # Fetch women's deals
+    women_deals = list(women_deals_collection.find({'shop_now_link': {'$regex': domain}}, {'_id': 0}))
+
+    # Fetch men's deals
+    men_deals = list(men_deals_collection.find({'shop_now_link': {'$regex': domain}}, {'_id': 0}))
+
+    if not women_deals and not men_deals:
+        return jsonify({'message': 'No deals found for the specified domain'}), 404
+
+    return jsonify({'women_deals': women_deals, 'men_deals': men_deals})
+
 
 @app.route('/clean-urls', methods=['POST'])
 def clean_urls():
