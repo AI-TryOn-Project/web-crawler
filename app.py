@@ -238,11 +238,21 @@ def get_deals_by_domain():
     # Fetch men's deals
     men_deals = list(men_deals_collection.find({'shop_now_link': {'$regex': domain}}, {'_id': 0}))
 
-    if not women_deals and not men_deals:
-        return jsonify({'message': 'No deals found for the specified domain'}), 404
+    # Combine the lists
+    combined_deals = women_deals + men_deals
 
-    return jsonify({'women_deals': women_deals, 'men_deals': men_deals})
+    # Sort by scrape_date (newest first)
+    combined_deals.sort(key=lambda x: datetime.strptime(x['scrape_date'], '%Y-%m-%d %H:%M:%S'), reverse=True)
 
+    # Remove duplicates based on shop_now_link
+    unique_deals = {}
+    for deal in combined_deals:
+        link = deal['shop_now_link']
+        if link not in unique_deals:
+            unique_deals[link] = deal
+
+    # Return the unique deals as a list
+    return jsonify(list(unique_deals.values()))
 
 @app.route('/clean-urls', methods=['POST'])
 def clean_urls():
